@@ -1,0 +1,165 @@
+!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MedGuard AI – Intake Triage Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBrmVmnHUwphb3gQjW6xMd362p7KD7mYZM",
+  authDomain: "medguard-ai-35959.firebaseapp.com",
+  projectId: "medguard-ai-35959",
+  storageBucket: "medguard-ai-35959.firebasestorage.app",
+  messagingSenderId: "224054037755",
+  appId: "1:224054037755:web:a4730fef1cdcdee16a345e",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.savePatient = async function() {
+
+  const name = document.getElementById("name").value;
+  const age = document.getElementById("age").value;
+  const disease = document.getElementById("disease").value;
+
+  try {
+    await addDoc(collection(db, "patients"), {
+      name: name,
+      age: age,
+      disease: disease
+    });
+
+    alert("Patient Data Saved Successfully");
+
+  } catch (error) {
+    console.error("Error adding document: ", error);
+  }
+
+}
+
+</script>
+  <body>
+    <header>
+      <h1>
+        <span>MedGuard AI</span>
+        &nbsp;•&nbsp; Intake Triage
+      </h1>
+      <div class="badge">City General Hospital • AI Innovation Workshop 2026</div>
+    </header>
+
+    <main>
+      <!-- LEFT: Intake + extraction preview -->
+      <section class="panel" id="intake-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Paste intake notes</div>
+            <div class="panel-subtitle">
+              Unstructured nurse / doctor notes, dictated text, or patient self‑reports.
+            </div>
+          </div>
+        </div>
+
+        <label for="intakeText">Raw intake text</label>
+        <textarea
+          id="intakeText"
+          placeholder="Example: 62‑year‑old male, history of hypertension. Presents with acute chest pain radiating to left arm, sweating, nausea. Allergic to penicillin..."
+        ></textarea>
+
+        <div class="button-row">
+          <button class="primary" id="triageButton">
+            ▶ Run MedGuard triage
+          </button>
+          <div class="status-text" id="statusText">
+            Ready. Paste text and run triage.
+          </div>
+        </div>
+
+        <div class="extract-wrapper">
+          <div class="panel-title">Extracted signal</div>
+          <div class="panel-subtitle">Structured view from LLM + rules engine.</div>
+
+          <div class="grid" id="summaryGrid">
+            <div class="field-card">
+              <label>Patient</label>
+              <p class="muted" id="patientName">—</p>
+            </div>
+            <div class="field-card">
+              <label>Age</label>
+              <p class="muted" id="patientAge">—</p>
+            </div>
+            <div class="field-card">
+              <label>Sex</label>
+              <p class="muted" id="patientSex">—</p>
+            </div>
+            <div class="field-card">
+              <label>Risk level</label>
+              <p class="muted" id="riskBadge">—</p>
+            </div>
+          </div>
+
+          <div class="field-full">
+            <label>Key symptoms</label>
+            <div id="symptomsField">—</div>
+          </div>
+          <div class="field-full">
+            <label>Drug allergies</label>
+            <div id="allergiesField">—</div>
+          </div>
+          <div class="field-full">
+            <label>Risk drivers</label>
+            <div id="reasonsField">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Live triaged queue from Firestore -->
+      <section class="panel" id="records-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Triage queue</div>
+            <div class="panel-subtitle">Synced from Firebase Firestore in real‑time.</div>
+          </div>
+        </div>
+
+        <div class="records-toolbar">
+          <div class="pill" id="countPill">0 records</div>
+          <select id="riskFilter">
+            <option value="ALL">All risk levels</option>
+            <option value="CRITICAL">Critical only</option>
+            <option value="MODERATE">Moderate</option>
+            <option value="ROUTINE">Routine</option>
+          </select>
+        </div>
+
+        <div class="records-list" id="recordsList">
+          <div class="empty-state">Run your first triage to see cards here.</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Template for a triage record card -->
+    <template id="recordTemplate">
+      <article class="record-card">
+        <div class="record-meta-col">
+          <div class="risk-badge risk-routine record-risk">ROUTINE</div>
+          <div class="record-time-wrapper">
+            <span class="record-time">Just now</span>
+          </div>
+        </div>
+        <div class="record-main">
+          <h3 class="record-title">Patient name</h3>
+          <p class="record-subtitle">Key symptoms...</p>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
